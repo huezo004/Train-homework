@@ -21,23 +21,8 @@
      // Grabs user input
       var trainName = $("#train-name-input").val().trim();
       var trainDest = $("#destination-input").val().trim();
-      var firstTime = $("#first-time-input").val().trim();
+      var firstTime = moment($("#first-time-input").val().trim(), "HH:mm").subtract(10, "years").format("X");
       var frequency = $("#frequency-input").val().trim();
-
-    // Set FirstTime 
-      var firstTimeConverted= moment(firstTime, "hh:mm").subtract(1, "years"); 
-       // Current Time  
-      var currentTime= moment(); 
-      //Diff between current the times
-      var diffTime= moment().diff(moment(firstTimeConverted), "minutes"); 
-      //Time apart 
-      var tRemainder= diffTime % frequency; 
-      //minutes until train 
-      var minutesAway= frequency- tRemainder; 
-      //Next Train 
-      var nextTrain = moment().add(minutesAway, "minutes"); 
-      //Next Train format 
-      nextTrain= nextTrain.format("hh:mm"); 
 
       //Creating train object 
       var newTrain = {
@@ -45,11 +30,11 @@
         trainName: trainName,
 
         trainDest: trainDest,
+
+        firstTime: firstTime, 
+
         frequency: frequency, 
 
-        nextTrain: nextTrain,  
-
-        minutesAway: minutesAway
       };
 
         database.ref().push(newTrain);
@@ -66,15 +51,14 @@ database.ref().on("child_added", function(childSnapshot, prevChildKey){
 
     var trainName   = childSnapshot.val().trainName;
     var destination = childSnapshot.val().trainDest;
-    var firstTrain = childSnapshot.val().nextTrain;
+    var firstTime = childSnapshot.val().firstTime;
     var frequency = childSnapshot.val().frequency;
 
-    //  next train arrives
-    var timeDifference = moment().diff(moment.unix(firstTrain), "minutes");
 
+    var timeDifference = moment().diff(moment.unix(firstTime), "minutes");
     var minutesAway = frequency - (timeDifference % frequency);
-    
     var nextTrain = moment().add(minutesAway, "minutes").format('HH:mm');
+    
 
     // Adds train data to table
     $("#train-table > tbody").append("<tr><td>" + trainName + "</td><td>" + destination + "</td><td>" + frequency + "</td><td>" + nextTrain + "</td><td>" + minutesAway + "</td></tr>");
